@@ -1,5 +1,18 @@
 package com.stackroute.keepnote.config;
 
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.hibernate.SessionFactory;
+
 /*This class will contain the application-context for the application. 
  * Define the following annotations:
  * @Configuration - Annotating a class with the @Configuration indicates that the 
@@ -8,7 +21,8 @@ package com.stackroute.keepnote.config;
  * @EnableTransactionManagement - Enables Spring's annotation-driven transaction management capability.
  *                  
  * */
-
+@Configuration
+@EnableTransactionManagement
 public class ApplicationContextConfig {
 
 	/*
@@ -16,19 +30,46 @@ public class ApplicationContextConfig {
 	 * dataSource. To create the DataSource bean, we need to know: 1. Driver class
 	 * name 2. Database URL 3. UserName 4. Password
 	 */
-
-/*
-        Use this configuration while submitting solution in hobbes.
+	@Bean
+	public DataSource getDataSource() {
+		BasicDataSource dataSource = new BasicDataSource();
 		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://" + System.getenv("MYSQL_HOST") + ":3306/" + System.getenv("MYSQL_DATABASE")
-				+"?verifyServerCertificate=false&useSSL=false&requireSSL=false");
-		dataSource.setUsername(System.getenv("MYSQL_USER"));
-		dataSource.setPassword(System.getenv("MYSQL_PASSWORD")); */
+		dataSource.setUrl("jdbc:mysql://" + "localhost" + ":3306/" + "iniyalDB?createDatabaseIfNotExist=true&"
+		+ "verifyServerCertificate=false&useSSL=false&requireSSL=false");
+		dataSource.setUsername("root");
+		dataSource.setPassword("v3ry$3cur3PASSWORD");
+		return dataSource;
+	}
+
+	/*
+	 * Use this configuration while submitting solution in hobbes.
+	 * dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+	 * dataSource.setUrl("jdbc:mysql://" + System.getenv("MYSQL_HOST") + ":3306/" +
+	 * System.getenv("MYSQL_DATABASE")
+	 * +"?verifyServerCertificate=false&useSSL=false&requireSSL=false");
+	 * dataSource.setUsername(System.getenv("MYSQL_USER"));
+	 * dataSource.setPassword(System.getenv("MYSQL_PASSWORD"));
+	 */
+	private Properties getHibernateProperties() {
+		Properties prop = new Properties();
+		prop.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
+		prop.put("hibernate.show_sql", "true");
+		prop.put("hibernate.format_sql", "true");
+		prop.put("hibernate.hbm2ddl.auto", "create");
+		return prop;
+	}
 
 	/*
 	 * Define the bean for SessionFactory. Hibernate SessionFactory is the factory
 	 * class through which we get sessions and perform database operations.
 	 */
+	@Bean
+	public SessionFactory getSessionFactory(DataSource dataSource) {
+		LocalSessionFactoryBuilder sfBuilder = new LocalSessionFactoryBuilder(dataSource);
+		sfBuilder.scanPackages("com.stackroute.keepnote");
+		sfBuilder.addProperties(getHibernateProperties());
+		return sfBuilder.buildSessionFactory();
+	}
 
 	/*
 	 * Define the bean for Transaction Manager. HibernateTransactionManager handles
@@ -38,4 +79,9 @@ public class ApplicationContextConfig {
 	 * JDBC too. HibernateTransactionManager allows bulk update and bulk insert and
 	 * ensures data integrity.
 	 */
+	@Bean
+	public HibernateTransactionManager getTransactionManager(SessionFactory sessionFactory) {
+		HibernateTransactionManager htm = new HibernateTransactionManager(sessionFactory);
+		return htm;
+	}
 }
