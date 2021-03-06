@@ -30,17 +30,6 @@ public class ApplicationContextConfig {
 	 * dataSource. To create the DataSource bean, we need to know: 1. Driver class
 	 * name 2. Database URL 3. UserName 4. Password
 	 */
-	@Bean
-	public DataSource getDataSource() {
-		BasicDataSource dataSource = new BasicDataSource();
-		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://" + "localhost" + ":3306/" + "iniyalDB?createDatabaseIfNotExist=true&"
-		+ "verifyServerCertificate=false&useSSL=false&requireSSL=false");
-		dataSource.setUsername("root");
-		dataSource.setPassword("v3ry$3cur3PASSWORD");
-		return dataSource;
-	}
-
 	/*
 	 * Use this configuration while submitting solution in hobbes.
 	 * dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
@@ -50,6 +39,18 @@ public class ApplicationContextConfig {
 	 * dataSource.setUsername(System.getenv("MYSQL_USER"));
 	 * dataSource.setPassword(System.getenv("MYSQL_PASSWORD"));
 	 */
+	@Bean
+	public DataSource getDataSource() {
+		BasicDataSource dataSource = new BasicDataSource();
+		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		dataSource.setUrl("jdbc:mysql://" +  System.getenv("MYSQL_HOST") + ":3306/" + System.getenv("MYSQL_DATABASE")ww
+		+ "verifyServerCertificate=false&useSSL=false&requireSSL=false");
+		dataSource.setUsername("root");
+		dataSource.setPassword(System.getenv("MYSQL_PASSWORD"));
+		return dataSource;
+	}
+
+	
 	private Properties getHibernateProperties() {
 		Properties prop = new Properties();
 		prop.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
